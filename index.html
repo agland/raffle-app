@@ -12,22 +12,35 @@
       color: white;
       margin: 0;
       padding: 0;
-      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #mainView, #drawView {
+      display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      overflow: hidden;
+      width: 100vw;
+    }
+    #mainView.active, #drawView.active {
+      display: flex;
     }
     h1 {
       font-size: 3em;
       margin-bottom: 1em;
     }
     #winner {
-      font-size: 4em;
+      font-size: 8vw;
       font-weight: bold;
       color: white;
-      margin-top: 30px;
+      text-align: center;
+    }
+    #nameDisplay {
+      font-size: 10vw;
+      font-weight: bold;
+      color: white;
+      text-align: center;
     }
     ul {
       max-height: 200px;
@@ -53,12 +66,6 @@
       border-radius: 4px;
       font-weight: bold;
     }
-    #nameDisplay {
-      font-size: 3em;
-      font-weight: bold;
-      margin-top: 1em;
-      color: white;
-    }
     canvas {
       position: fixed;
       top: 0;
@@ -71,18 +78,31 @@
   </style>
 </head>
 <body>
-  <h1>EEI Raffle Picker</h1>
-  <input type="file" id="fileInput" accept=".txt"><br>
-  <ul id="nameList"></ul>
-  <button id="pickButton" disabled>Pick Winner</button>
-  <div id="nameDisplay">...</div>
-  <div id="winner"></div>
-  <canvas id="confetti-canvas"></canvas>
+  <div id="mainView" class="active">
+    <h1>EEI Raffle Picker</h1>
+    <input type="file" id="fileInput" accept=".txt"><br>
+    <ul id="nameList"></ul>
+    <button id="pickButton" disabled>Pick Winner</button>
+  </div>
+
+  <div id="drawView">
+    <div id="nameDisplay">...</div>
+    <div id="winner"></div>
+    <canvas id="confetti-canvas"></canvas>
+  </div>
 
   <script>
     let names = [];
 
-    document.getElementById('fileInput').addEventListener('change', function(event) {
+    const fileInput = document.getElementById('fileInput');
+    const nameList = document.getElementById('nameList');
+    const pickButton = document.getElementById('pickButton');
+    const winnerDisplay = document.getElementById('winner');
+    const nameDisplay = document.getElementById('nameDisplay');
+    const mainView = document.getElementById('mainView');
+    const drawView = document.getElementById('drawView');
+
+    fileInput.addEventListener('change', function(event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -91,7 +111,6 @@
         const text = e.target.result;
         names = text.split('\n').map(name => name.trim()).filter(name => name !== '');
 
-        const nameList = document.getElementById('nameList');
         nameList.innerHTML = '';
         names.forEach(name => {
           const li = document.createElement('li');
@@ -99,23 +118,23 @@
           nameList.appendChild(li);
         });
 
-        document.getElementById('pickButton').disabled = names.length === 0;
-        document.getElementById('winner').textContent = '';
+        pickButton.disabled = names.length === 0;
+        winnerDisplay.textContent = '';
       };
       reader.readAsText(file);
     });
 
-    document.getElementById('pickButton').addEventListener('click', function() {
+    pickButton.addEventListener('click', function() {
       if (names.length === 0) return;
 
+      mainView.classList.remove('active');
+      drawView.classList.add('active');
       clearConfetti();
 
-      let nameDisplay = document.getElementById('nameDisplay');
-      let winnerDisplay = document.getElementById('winner');
       let startTime = Date.now();
-      let duration = 15000; // 15 seconds total
-      let fastDuration = 10000; // first 10 seconds fast
-      let interval = 50; // start fast
+      let duration = 15000; // 15 seconds
+      let fastDuration = 10000; // fast scroll first
+      let interval = 50;
 
       function spin() {
         const now = Date.now();
@@ -135,7 +154,7 @@
         if (elapsed < fastDuration) {
           interval = 50;
         } else {
-          interval += 30; // slow down
+          interval += 30;
         }
 
         setTimeout(spin, interval);
