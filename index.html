@@ -31,16 +31,33 @@
       margin-bottom: 1em;
     }
     #winner {
-      font-size: 8vw;
+      font-size: 10vw;
       font-weight: bold;
-      color: white;
+      color: #FFD700;
       text-align: center;
+      animation: winnerFlash 0.5s infinite alternate, zoomIn 1s ease-out forwards;
+      line-height: 1.2;
+      white-space: pre-line;
+    }
+    @keyframes winnerFlash {
+      0% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+    @keyframes zoomIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
     }
     #nameDisplay {
       font-size: 10vw;
       font-weight: bold;
       color: white;
       text-align: center;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
     }
     ul {
       max-height: 200px;
@@ -132,8 +149,8 @@
       clearConfetti();
 
       let startTime = Date.now();
-      let duration = 15000; // 15 seconds
-      let fastDuration = 10000; // fast scroll first
+      let duration = 15000;
+      let fastDuration = 10000;
       let interval = 50;
 
       function spin() {
@@ -142,9 +159,11 @@
 
         if (elapsed >= duration) {
           const finalWinner = names[Math.floor(Math.random() * names.length)];
-          nameDisplay.textContent = '';
-          winnerDisplay.textContent = `WINNER: ${finalWinner}`;
-          launchConfetti();
+          const [first, ...rest] = finalWinner.split(' ');
+          const last = rest.join(' ');
+          nameDisplay.style.display = 'none';
+          winnerDisplay.innerHTML = `🎉 WINNER:\n${first}\n${last} 🎉`;
+          launchConfetti(true);
           return;
         }
 
@@ -163,7 +182,6 @@
       spin();
     });
 
-    // Confetti functions
     const confettiCanvas = document.getElementById('confetti-canvas');
     const ctx = confettiCanvas.getContext('2d');
     let confettiPieces = [];
@@ -175,14 +193,15 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    function launchConfetti() {
+    function launchConfetti(extra = false) {
       confettiPieces = [];
-      for (let i = 0; i < 150; i++) {
+      const count = extra ? 500 : 200;
+      for (let i = 0; i < count; i++) {
         confettiPieces.push({
           x: Math.random() * window.innerWidth,
           y: Math.random() * window.innerHeight - 500,
-          r: Math.random() * 6 + 4,
-          d: Math.random() * 40 + 5,
+          r: Math.random() * 8 + 4,
+          d: Math.random() * 60 + 5,
           color: `hsl(${Math.random() * 360}, 100%, 50%)`,
           tilt: Math.random() * 10 - 10,
           tiltAngle: 0,
