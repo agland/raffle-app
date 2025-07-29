@@ -2,32 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Raffle Picker</title>
+  <title>EEI Raffle Picker</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Proxima+Nova:wght@400;700&display=swap');
+
     body {
-      font-family: 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Proxima Nova', 'Segoe UI', sans-serif;
+      background-color: #0083BE;
+      color: white;
       margin: 0;
       padding: 0;
-      background: #f5f5f5;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       height: 100vh;
       overflow: hidden;
     }
-    #mainView, #drawView {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    #mainView.active, #drawView.active {
-      display: flex;
+    h1 {
+      font-size: 3em;
+      margin-bottom: 1em;
     }
     #winner {
-      font-size: 6em;
+      font-size: 4em;
       font-weight: bold;
-      color: darkgreen;
+      color: white;
       margin-top: 30px;
     }
     ul {
@@ -36,6 +35,8 @@
       padding-left: 0;
       margin-top: 10px;
       text-align: left;
+      width: 100%;
+      max-width: 600px;
     }
     li {
       list-style: none;
@@ -46,11 +47,17 @@
       padding: 12px 24px;
       font-size: 18px;
       cursor: pointer;
+      background-color: white;
+      color: #0083BE;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
     }
     #nameDisplay {
-      font-size: 4em;
+      font-size: 3em;
       font-weight: bold;
       margin-top: 1em;
+      color: white;
     }
     canvas {
       position: fixed;
@@ -64,64 +71,51 @@
   </style>
 </head>
 <body>
-  <div id="mainView" class="active">
-    <div>
-      <h1>Upload Raffle Entrants</h1>
-      <input type="file" id="fileInput" accept=".txt">
-      <ul id="nameList"></ul>
-      <button id="pickButton" disabled>Pick Winner</button>
-    </div>
-  </div>
-
-  <div id="drawView">
-    <div>
-      <div id="nameDisplay">...</div>
-      <div id="winner"></div>
-    </div>
-    <canvas id="confetti-canvas"></canvas>
-  </div>
+  <h1>EEI Raffle Picker</h1>
+  <input type="file" id="fileInput" accept=".txt"><br>
+  <ul id="nameList"></ul>
+  <button id="pickButton" disabled>Pick Winner</button>
+  <div id="nameDisplay">...</div>
+  <div id="winner"></div>
+  <canvas id="confetti-canvas"></canvas>
 
   <script>
     let names = [];
 
-    const fileInput = document.getElementById('fileInput');
-    const nameList = document.getElementById('nameList');
-    const pickButton = document.getElementById('pickButton');
-    const winnerDisplay = document.getElementById('winner');
-    const nameDisplay = document.getElementById('nameDisplay');
-    const mainView = document.getElementById('mainView');
-    const drawView = document.getElementById('drawView');
-
-    fileInput.addEventListener('change', function(event) {
+    document.getElementById('fileInput').addEventListener('change', function(event) {
       const file = event.target.files[0];
       if (!file) return;
+
       const reader = new FileReader();
       reader.onload = function(e) {
         const text = e.target.result;
         names = text.split('\n').map(name => name.trim()).filter(name => name !== '');
+
+        const nameList = document.getElementById('nameList');
         nameList.innerHTML = '';
         names.forEach(name => {
           const li = document.createElement('li');
           li.textContent = name;
           nameList.appendChild(li);
         });
-        pickButton.disabled = names.length === 0;
-        winnerDisplay.textContent = '';
+
+        document.getElementById('pickButton').disabled = names.length === 0;
+        document.getElementById('winner').textContent = '';
       };
       reader.readAsText(file);
     });
 
-    pickButton.addEventListener('click', function() {
+    document.getElementById('pickButton').addEventListener('click', function() {
       if (names.length === 0) return;
-      mainView.classList.remove('active');
-      drawView.classList.add('active');
 
       clearConfetti();
 
-      const startTime = Date.now();
-      const duration = 15000; // total duration in ms
-      const fastDuration = 10000; // fast scroll for 10 seconds
-      let interval = 50; // initial interval in ms
+      let nameDisplay = document.getElementById('nameDisplay');
+      let winnerDisplay = document.getElementById('winner');
+      let startTime = Date.now();
+      let duration = 15000; // 15 seconds total
+      let fastDuration = 10000; // first 10 seconds fast
+      let interval = 50; // start fast
 
       function spin() {
         const now = Date.now();
@@ -150,7 +144,7 @@
       spin();
     });
 
-    // ----------- Confetti -------------
+    // Confetti functions
     const confettiCanvas = document.getElementById('confetti-canvas');
     const ctx = confettiCanvas.getContext('2d');
     let confettiPieces = [];
